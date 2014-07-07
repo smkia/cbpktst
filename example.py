@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     print("Creating simulated data.")
     k = 10
-    XX, YY, proximity_matrix, coordinates = simulate_2d(k=k, threshold=0.5)
+    XX, YY, proximity_matrix, coordinates = simulate_2d(k=k, threshold=1.5)
 
     print("Retrieving or creating Kernel matrices and samples from null distributions.")
     filename = "data/kernels_mmd2u_null_distributions.pickle"
@@ -56,11 +56,10 @@ if __name__ == '__main__':
 
     print("Computing actual p-values of unpermuted data")
     p_value = (unit_statistic_permutation.T >= unit_statistic).sum(0).astype(np.float) / iterations
+    unit_significant = p_value <= p_value_threshold
     print("Computing the p-value of each permutation of each unit.")
     p_value_permutation = (iterations - np.argsort(np.argsort(unit_statistic_permutation, axis=1), axis=1)).astype(np.float) / iterations # argsort(argsor(x)) given the rankings of x in the same order. Example: a=[40,30,50,10,20] , then argsort(argsort(a)) gives array([3, 2, 4, 0, 1])
-
     unit_significant_permutation = p_value_permutation <= p_value_threshold
-    unit_significant = p_value <= p_value_threshold
 
     if homogeneous_statistic == '1-p_value':
         unit_statistic_permutation_homogeneous = 1.0 - p_value_permutation
