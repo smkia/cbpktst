@@ -15,8 +15,12 @@ if __name__ == '__main__':
     iterations = 1000
 
     print("Creating simulated data.")
+    d = 20
     k = 10
-    XX, YY, proximity_matrix, coordinates = simulate_2d(k=k, threshold=1.5)
+    m = 200
+    n = 200
+    threshold = 1.5
+    XX, YY, proximity_matrix, coordinates = simulate_2d(d=d, k=k, m=m, n=n, threshold=threshold)
 
     print("Retrieving or creating Kernel matrices and samples from null distributions.")
     filename = "data/kernels_mmd2u_null_distributions.pickle"
