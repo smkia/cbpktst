@@ -104,9 +104,9 @@ if __name__ == '__main__':
         for i, pvc in enumerate(p_value_cluster):
             if pvc <= p_value_threshold:
                 cluster_significant.append(np.where(unit_significant)[0][cluster[i]])
-
+        print("%d significant clusters left" % len(cluster_significant))
     else:
-        print("No significant clusters in unpermuted data!")
+        print("No clusters in unpermuted data!")
 
     print("Zeroing all unit statistic (homogeneous too) related non-significant clusters.")
     unit_statistic_significant = np.zeros(unit_statistic.size)
