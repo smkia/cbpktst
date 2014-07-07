@@ -5,6 +5,9 @@ from sklearn.neighbors import KDTree
 from sklearn.metrics import pairwise_distances
 from kernel_two_sample_test import MMD2u, compute_null_distribution
 from joblib import Parallel, delayed
+from scipy.sparse import issparse
+from networkx import from_scipy_sparse_matrix, from_numpy_matrix, connected_components
+
 
 def compute_boolean_proximity_matrix(coordinates, threshold):
     """Compute the boolean proximity matrix of units (with given
@@ -95,3 +98,30 @@ def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, para
     return unit_statistic, unit_statistic_permutation
 
     
+def compute_clusters_statistic(test_statistic, proximity_matrix, verbose=False):
+    """Given a test statistic for each unit and a boolean proximity
+    matrix among units, compute the cluster statistic using the
+    connected components graph algorithm. It works for sparse
+    proximity matrices as well.
+
+    Returns the clusters and their associated cluster statistic.
+    """
+    # Build a graph from the proximity matrix:
+    if issparse(proximity_matrix):
+        graph = from_scipy_sparse_matrix(proximity_matrix)
+    else:
+        graph = from_numpy_matrix(proximity_matrix)
+
+    # Compute connected components:
+    clusters = connected_components(graph)
+    if verbose: print("Nr. of clusters: %s. Clusters sizes: %s" % (len(clusters), np.array([len(cl) for cl in clusters])))
+    # Compute the cluster statistic:
+    cluster_statistic = np.zeros(len(clusters))
+    for i, cluster in enumerate(clusters):
+        cluster_statistic[i] = test_statistic[cluster].sum()
+
+    # final cleanup to prepare easy-to-use results:
+    idx = np.argsort(cluster_statistic)[::-1]
+    clusters = np.array([np.array(cl) for cl in clusters], dtype=np.object)[idx]
+    cluster_statistic = cluster_statistic[idx]
+    return clusters, cluster_statistic
