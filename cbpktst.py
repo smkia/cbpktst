@@ -53,17 +53,22 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
     n_units = XX.shape[1] # or YY.shape[1]
     Ks = [] # here we store all the kernel matrices
     sigma2s = np.zeros(n_units) # here we store all the sigma2s, one per unit
+    m = XX.shape[0]
+    n = YY.shape[0]
     for i in range(n_units):
         print("Unit %s" % i)
         X = XX[:,i,:].copy()
         Y = YY[:,i,:].copy()
         if verbose: print("%s  %s" % (X.shape, Y.shape))
         if verbose: print("Computing Gaussian kernel.")
-        dm = pairwise_distances(np.vstack([X, Y]), metric='euclidean')
-        sigma2 = np.median(dm)**2 # Heuristic: sigma2 is the median value among all pairwise distances
+        dm = pairwise_distances(np.vstack([X, Y]), metric='sqeuclidean')
+        # Heuristic: sigma2 is the median value among all pairwise
+        # distances between X and Y. Note: should we use just
+        # dm[:m,m:] or all dm?
+        sigma2 = np.median(dm[:m,m:]) 
         sigma2s[i] = sigma2
         if verbose: print("sigma2 = %s" % sigma2)
-        K = np.exp(-(dm*dm) / sigma2)
+        K = np.exp(-dm / sigma2)
         Ks.append(K)
 
     return Ks, sigma2s
