@@ -56,7 +56,7 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
     for i in range(n_units):
         print("Unit %s" % i)
         X = XX[:,i,:].copy()
-        Y = XX[:,i,:].copy()
+        Y = YY[:,i,:].copy()
         if verbose: print("%s  %s" % (X.shape, Y.shape))
         if verbose: print("Computing Gaussian kernel.")
         dm = pairwise_distances(np.vstack([X, Y]), metric='euclidean')
