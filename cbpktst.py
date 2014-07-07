@@ -127,6 +127,14 @@ def compute_clusters_statistic(test_statistic, proximity_matrix, verbose=False):
 
     # final cleanup to prepare easy-to-use results:
     idx = np.argsort(cluster_statistic)[::-1]
-    clusters = np.array([np.array(cl) for cl in clusters], dtype=np.object)[idx]
+    clusters = np.array([np.array(cl, dtype=np.int) for cl in clusters], dtype=np.object)[idx]
+    if clusters[0].dtype == np.object: # THIS FIXES A NUMPY BUG (OR FEATURE?)
+        # The bug: it seems not possible to create ndarray of type
+        # np.object from arrays all of the *same* lenght and desired
+        # dtype, i.e. dtype!=np.object. In this case the desired dtype
+        # is automatically changed into np.object. Example:
+        # array([array([1], dtype=int)], dtype=object)
+        clusters = clusters.astype(np.int)
+
     cluster_statistic = cluster_statistic[idx]
     return clusters, cluster_statistic
