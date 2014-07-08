@@ -65,7 +65,7 @@ if __name__ == '__main__':
     XX = np.vstack([XX,YY])
 
     print "Computing the proximity matrix in space and time."
-    proximity_matrix_space_time = compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps=XX.shape[2], threshold_space=threshold_space, threshold_timesteps=threshold_timesteps)
+    proximity_matrix_space_time = compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps=XX.shape[2], threshold_space=threshold_space, threshold_timesteps=threshold_timesteps, space_sparse=False, verbose=False)
 
     print "Computing clusters on unpermuted data."
     clusters, cluster_statistic = compute_ttest_clusters(XX, yy, p_value_threshold, proximity_matrix_space_time)
@@ -88,6 +88,7 @@ if __name__ == '__main__':
     else:
         print("Parallel computation!")
         batch_size = 20
+        print("Splitting %d iterations in %d parallel batches of %d each" %(iterations, iterations/batch_size, batch_size))
         def ttest_cluster_statistic_permuted_batch(XX, yy, p_value_threshold, proximity_matrix_space_time, batch_size):
             max_cluster_statistic = np.zeros(batch_size)
             for k in range(batch_size):
