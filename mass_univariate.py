@@ -9,7 +9,6 @@ from proximity import compute_sparse_boolean_proximity_matrix_space_time
 from joblib import Parallel, delayed
 from scipy.stats import ttest_ind
 from cbpktst import compute_clusters_statistic
-from sys import stdout
 
 
 def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time, verbose=False):
@@ -21,7 +20,11 @@ def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time
     if verbose: print("2) threshold p_values.")
     # Note: in the following we transpose t and p, so that .flatten()
     # unrolls them in the same order of proximity_matrix_space_time.
-    t_flat = t.T.flatten() # ABS??
+    t_flat = t.T.flatten()
+    # Should we use abs(t) in the previous expression? So that the
+    # cluster statistic sums just postive values, thus avoiding
+    # potential cancelling-out of units with alternating sign. This
+    # detail is not specified anywhere...
     idx = np.where(p.T.flatten() <= p_value_threshold)[0]
 
     if verbose: print("3) remove all mask entries with less than e.g. two adjacent below-threshold value. This step is OPTIONAL.")
@@ -84,14 +87,17 @@ if __name__ == '__main__':
         print
     else:
         print("Parallel computation!")
-        def myfunc(XX, yy, p_value_threshold, proximity_matrix_space_time):
-            y = np.random.permutation(yy)
-            clusters_i, cluster_statistic_i = compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time)
-            max_cluster_statistic = np.abs(cluster_statistic_i).max()
+        batch_size = 20
+        def ttest_cluster_statistic_permuted_batch(XX, yy, p_value_threshold, proximity_matrix_space_time, batch_size):
+            max_cluster_statistic = np.zeros(batch_size)
+            for k in range(batch_size):
+                y = np.random.permutation(yy)
+                clusters_i, cluster_statistic_i = compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time)
+                max_cluster_statistic[k] = np.abs(cluster_statistic_i).max()
             return max_cluster_statistic
 
-        max_cluster_statistic = Parallel(n_jobs=n_jobs, verbose=10)(delayed(myfunc)(XX, yy, p_value_threshold, proximity_matrix_space_time) for i in range(iterations))
-        max_cluster_statistic = np.array(max_cluster_statistic)
+        max_cluster_statistic = Parallel(n_jobs=n_jobs, verbose=10)(delayed(ttest_cluster_statistic_permuted_batch)(XX, yy, p_value_threshold, proximity_matrix_space_time, batch_size) for i in range(iterations/batch_size))
+        max_cluster_statistic = np.concatenate(max_cluster_statistic)
 
     cluster_statistic_threshold = np.sort(max_cluster_statistic)[iterations * (1.0 - p_value_threshold)]
     print "cluster_statistic threshold (for p_value=%s) = %s" % (p_value_threshold, cluster_statistic_threshold)
