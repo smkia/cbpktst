@@ -43,7 +43,7 @@ def compute_sparse_boolean_proximity_matrix(coordinates, threshold):
     return proximity_matrix.tocsc()
 
 
-def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps, threshold_space=0.1, threshold_timesteps=1, space_sparse=False):
+def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps, threshold_space=0.1, threshold_timesteps=1, space_sparse=False, verbose=False):
     """Create the proximity matrix of a set of units with given
     coordinates in space and time, where two units are proximal if
     their Euclidean distance is less then the given threshold_space
@@ -74,22 +74,22 @@ def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps,
     submatrices in ktst_map.compute_clusters_statistic(), it is
     necessary to convert the lil_matrix into a csc_matrix.
     """
-    # compute the space proximity matrix:
+    if verbose: print("compute_sparse_boolean_proximity_matrix_space_time()")
+    if verbose: print("Computing the space proximity matrix.")
     if space_sparse:
         proximity_matrix_space = compute_sparse_boolean_proximity_matrix(coordinates, threshold_space)
     else:
         proximity_matrix_space = compute_boolean_proximity_matrix(coordinates, threshold_space)
 
-    # Create the very large sparse space time proximity matrix:
+    if verbose: print("Creating the very large sparse space time proximity matrix.")
     n_units = len(coordinates)
     proximity_matrix = lil_matrix((n_units * n_timesteps, n_units * n_timesteps), dtype=np.bool)
 
-    # Fill the sparse matrix with the space proximity matrix as a
-    # block on the diagonal:
+    if verbose: print("Filling the sparse matrix with the space proximity matrix as a block on the diagonal")
     for i in range(n_timesteps):
         proximity_matrix[i*n_units:(i+1) * n_units, i*n_units:(i+1) * n_units] = proximity_matrix_space
 
-    # Fill the offset diagonals with 'True' to encode proximity in time.
+    if verbose: print("Filling the offset diagonals with 'True' to encode proximity in time.")
     for k in range(1, threshold_timesteps + 1):
         proximity_matrix.setdiag(np.ones(n_units * (n_timesteps - k), dtype=np.bool), n_units * k)
         proximity_matrix.setdiag(np.ones(n_units * (n_timesteps - k), dtype=np.bool), - n_units * k)
