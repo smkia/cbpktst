@@ -12,11 +12,11 @@ from cbpktst import compute_clusters_statistic
 from sys import stdout
 
 
-def compute_ttest_clusters(XX, YY, p_value_threshold, proximity_matrix_space_time):
+def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time):
     """See Groppe et al. (Psychophysiology 2011), p.1718.
     """
     # print "1) Compute t scores for every timepoint and sensor of interest."
-    t, p = ttest_ind(XX[yy==-1], XX[yy==1], axis=0)
+    t, p = ttest_ind(XX[y==-1], XX[y==1], axis=0)
 
     # print "2) threshold p_values."
     # mask = p <= p_value_threshold
