@@ -1,6 +1,7 @@
-"""Mass-univariate cluster-based permutation test (CBPT). This should
-be equivalent to what FieldTrip provides. This implementation follows
-the description in Groppe et al. (Psychophysiology, 2011) p.1718.
+"""Example of mass-univariate cluster-based permutation t-test
+(CBPtT). This should be equivalent to what FieldTrip provides. This
+implementation follows the description in Groppe et
+al. (Psychophysiology, 2011) p.1718.
 """
 
 import numpy as np
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     parallel = True
     save = True
 
-    print("Mass-univariate cluster-based permutation test (CBPT)")
+    print("Mass-univariate cluster-based permutation t-test (CBPtT)")
     p_value_threshold = 0.05
     iterations = 1000
     n_jobs = -1
