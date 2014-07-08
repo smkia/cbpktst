@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from cbpktst import compute_boolean_proximity_matrix, compute_sparse_boolean_proximity_matrix
+from proximity import compute_boolean_proximity_matrix, compute_sparse_boolean_proximity_matrix
 
 def simulate_2d(d=20, k=10, m=200, n=200, threshold=1.0):
     """This data simulator generates two samples, of m and n trials
