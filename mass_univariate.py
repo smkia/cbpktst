@@ -4,7 +4,7 @@ the description in Groppe et al. (Psychophysiology, 2011) p.1718.
 """
 
 import numpy as np
-from simulate_data import simulate_2d
+from simulate_data import simulate_2d, plot_map2d
 from proximity import compute_sparse_boolean_proximity_matrix_space_time
 from joblib import Parallel, delayed
 from scipy.stats import ttest_ind
@@ -12,21 +12,22 @@ from cbpktst import compute_clusters_statistic
 from sys import stdout
 
 
-def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time):
+def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time, verbose=False):
     """See Groppe et al. (Psychophysiology 2011), p.1718.
     """
-    # print "1) Compute t scores for every timepoint and sensor of interest."
-    t, p = ttest_ind(XX[y==-1], XX[y==1], axis=0)
+    if verbose: print("1) Compute t scores for every timepoint and sensor of interest.")
+    t, p = ttest_ind(XX[y==-1], XX[y==1], axis=0) # This is a two-sided test, see docstring
 
-    # print "2) threshold p_values."
-    # mask = p <= p_value_threshold
+    if verbose: print("2) threshold p_values.")
+    # Note: in the following we transpose t and p, so that .flatten()
+    # unrolls them in the same order of proximity_matrix_space_time.
     t_flat = t.T.flatten() # ABS??
     idx = np.where(p.T.flatten() <= p_value_threshold)[0]
 
-    # print "3) remove all mask entries with less than e.g. two adjacent below-threshold value. This step is OPTIONAL."
-    # print "WE SKIP THIS STEP."
+    if verbose: print("3) remove all mask entries with less than e.g. two adjacent below-threshold value. This step is OPTIONAL.")
+    if verbose: print("WE SKIP THIS STEP.")
 
-    # print "4) cluster below threshold values in time and space."
+    if verbose: print("4) cluster below threshold values in time and space.")
     clusters, cluster_statistic = compute_clusters_statistic(t_flat[idx], proximity_matrix_space_time[idx[:, None], idx])
     # give original indices to elements in clusters:
     clusters = [[idx[ci] for ci in cl] for cl in clusters]
@@ -79,6 +80,8 @@ if __name__ == '__main__':
             y = np.random.permutation(yy)
             clusters_i, cluster_statistic_i = compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time)
             max_cluster_statistic[i] = np.abs(cluster_statistic_i).max()
+
+        print
     else:
         print("Parallel computation!")
         def myfunc(XX, yy, p_value_threshold, proximity_matrix_space_time):
@@ -88,6 +91,7 @@ if __name__ == '__main__':
             return max_cluster_statistic
 
         max_cluster_statistic = Parallel(n_jobs=n_jobs, verbose=10)(delayed(myfunc)(XX, yy, p_value_threshold, proximity_matrix_space_time) for i in range(iterations))
+        max_cluster_statistic = np.array(max_cluster_statistic)
 
     cluster_statistic_threshold = np.sort(max_cluster_statistic)[iterations * (1.0 - p_value_threshold)]
     print "cluster_statistic threshold (for p_value=%s) = %s" % (p_value_threshold, cluster_statistic_threshold)
@@ -96,7 +100,18 @@ if __name__ == '__main__':
     if len(clusters_over_threshold) > 0: print "Clusters:"
     for i, cl in enumerate(clusters_over_threshold):
         print "%s) id: %s, size: %s, clust.stat.: %s" % (i, cl, len(clusters[cl]), cluster_statistic[cl])
-    
-    t, p = ttest_ind(XX[yy==-1], XX[yy==1], axis=0)
 
-                  
+
+    t, p = ttest_ind(XX[yy==-1], XX[yy==1], axis=0)    
+    plot_map2d(k, coordinates, t.mean(1))
+    
+    print("Keeping only significant clusters and producing space values.")
+    n_units = k * k
+    thresholded_t_map = np.zeros(n_units)
+    for i, cot in enumerate(clusters_over_threshold):
+        for unit_ts in clusters[cot]:
+            unit_s = unit_ts % n_units
+            timestep = unit_ts // n_units
+            thresholded_t_map[unit_s] = t[unit_s, timestep]
+    
+    plot_map2d(k, coordinates, thresholded_t_map)
