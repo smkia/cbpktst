@@ -3,6 +3,7 @@ from scipy.sparse import coo_matrix, lil_matrix
 # from scipy.spatial.kdtree import KDTree
 from sklearn.neighbors import KDTree
 from sklearn.metrics import pairwise_distances
+from sys import stdout
 
 
 def compute_boolean_proximity_matrix(coordinates, threshold):
@@ -87,6 +88,10 @@ def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps,
 
     if verbose: print("Filling the sparse matrix with the space proximity matrix as a block on the diagonal")
     for i in range(n_timesteps):
+        if verbose:
+            print(i),
+            stdout.flush()
+            
         proximity_matrix[i*n_units:(i+1) * n_units, i*n_units:(i+1) * n_units] = proximity_matrix_space
 
     if verbose: print("Filling the offset diagonals with 'True' to encode proximity in time.")
