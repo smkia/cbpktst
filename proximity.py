@@ -64,7 +64,7 @@ def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps,
 
     The ordered list of nodes on the rows (and equally on the columns)
     is:
-    ch0[t=0],...,chN[t=0],ch0[t=1],...,chN[t=1],...,ch0[t=M],...,chN[t=M]
+    un0[t=0],...,unN[t=0],un0[t=1],...,unN[t=1],...,un0[t=M],...,unN[t=M]
     where N is the number of units (n_units) and M is the number
     of timesteps (n_timesteps).
 
