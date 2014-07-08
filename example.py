@@ -1,3 +1,6 @@
+"""Example of Cluster-Based Permutation Kernel Two-Sample Test (CBPKTST).
+"""
+
 from cbpktst import *
 import pickle
 from simulate_data import simulate_2d, plot_map2d
