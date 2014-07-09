@@ -16,12 +16,13 @@ if __name__ == '__main__':
     verbose = True
     parallel = True
     save = True
+    space_sparse = False
 
     print("Mass-univariate cluster-based permutation t-test (CBPtT)")
     p_value_threshold = 0.05
     iterations = 1000
     n_jobs = -1
-    batch_size = 20
+    batch_size = 50
 
     print("Creating simulated data.")
     d = 20
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     threshold_timesteps = 1
     XX, YY, proximity_matrix, coordinates = simulate_2d(d=d, k=k, m=m, n=n, threshold=threshold_space)
 
-    clusters, clusters_over_threshold = cluster_based_permutation_t_test(XX, YY, coordinates, iterations, p_value_threshold, threshold_space, threshold_timesteps, parallel=parallel, n_jobs=n_jobs, batch_size=batch_size, verbose=False, space_sparse=False)
+    clusters, clusters_over_threshold = cluster_based_permutation_t_test(XX, YY, coordinates, iterations, p_value_threshold, threshold_space, threshold_timesteps, parallel=parallel, n_jobs=n_jobs, batch_size=batch_size, verbose=verbose, space_sparse=space_sparse)
 
     t, p = ttest_ind(XX, YY, axis=0)
     plot_map2d(k, coordinates, t.mean(1))
