@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import coo_matrix, lil_matrix
+from scipy.sparse import coo_matrix, lil_matrix, bsr_matrix, csr_matrix
 # from scipy.spatial.kdtree import KDTree
 from sklearn.neighbors import KDTree
 from sklearn.metrics import pairwise_distances
@@ -69,11 +69,14 @@ def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps,
     where N is the number of units (n_units) and M is the number
     of timesteps (n_timesteps).
 
-    Note: lil_matrix is the necessary format to allow fancy indexing
-    when patching the spatial proximity matrix into the proximity
-    matrix and to set the diagonals. But in order to extract
-    submatrices in ktst_map.compute_clusters_statistic(), it is
-    necessary to convert the lil_matrix into a csc_matrix.
+    Note: bsr_matrix or csr_matrix is the necessary format for fast
+    creation of the proximity_matrix when repeating the
+    proximity_matrix_space on the diagonal of the proximity_matrix to
+    model the same spatial strucure at each time step. Then lil_matrix
+    is necessary for fast setting of diagonal values to model the
+    temporal proximity of units. But in order to extract submatrices
+    as in compute_clusters_statistic(), it is necessary to convert the
+    lil_matrix into a csc_matrix when returning it.
     """
     if verbose: print("compute_sparse_boolean_proximity_matrix_space_time()")
     if verbose: print("Computing the space proximity matrix.")
@@ -83,17 +86,13 @@ def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps,
         proximity_matrix_space = compute_boolean_proximity_matrix(coordinates, threshold_space)
 
     if verbose: print("Creating the very large sparse space time proximity matrix.")
-    n_units = len(coordinates)
-    proximity_matrix = lil_matrix((n_units * n_timesteps, n_units * n_timesteps), dtype=np.bool)
-
     if verbose: print("Filling the sparse matrix with the space proximity matrix as a block on the diagonal")
-    for i in range(n_timesteps):
-        if verbose:
-            print(i),
-            stdout.flush()
-            
-        proximity_matrix[i*n_units:(i+1) * n_units, i*n_units:(i+1) * n_units] = proximity_matrix_space
-
+    n_units = len(coordinates)
+    x, y = proximity_matrix_space.nonzero()
+    i = np.concatenate([x + t * n_units for t in range(n_timesteps)])
+    j = np.concatenate([y + t * n_units for t in range(n_timesteps)])
+    proximity_matrix = bsr_matrix((np.ones(len(i), dtype=np.bool), (i,j)), shape=(n_units * n_timesteps, n_units * n_timesteps), dtype=np.bool)
+    proximity_matrix = proximity_matrix.tolil() # trasnforming to lil format in order to do the next steps.
     if verbose: print("Filling the offset diagonals with 'True' to encode proximity in time.")
     for k in range(1, threshold_timesteps + 1):
         proximity_matrix.setdiag(np.ones(n_units * (n_timesteps - k), dtype=np.bool), n_units * k)
