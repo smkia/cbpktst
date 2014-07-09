@@ -158,7 +158,7 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
             # http://stackoverflow.com/questions/6408385/index-a-scipy-sparse-matrix-with-an-array-of-booleans
             pm_permutation = proximity_matrix[idx][:,idx]
             print("%d" % i),
-            cluster_permutation, cluster_statistic_permutation = compute_clusters_statistic(unit_statistic_permutation_homogeneous[idx,i], pm_permutation, verbose=True)
+            cluster_permutation, cluster_statistic_permutation = compute_clusters_statistic(unit_statistic_permutation_homogeneous[idx,i], pm_permutation, verbose=verbose)
             max_cluster_statistic[i] = cluster_statistic_permutation.max()
 
     print("Computing the null-distribution of the max cluster statistic.")
