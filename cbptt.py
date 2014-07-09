@@ -11,7 +11,7 @@ from cbpktst import compute_clusters_statistic
 
 
 def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time, verbose=False):
-    """See Groppe et al. (Psychophysiology 2011), p.1718.
+    """See Groppe et al. (Psychophysiology, 2011), p.1718.
     """
     if verbose: print("1) Compute t scores for every timepoint and sensor of interest.")
     t, p = ttest_ind(XX[y==-1], XX[y==1], axis=0) # This is a two-sided test, see docstring
