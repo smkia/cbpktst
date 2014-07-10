@@ -128,17 +128,16 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
     p_value_permutation = (iterations - np.argsort(np.argsort(unit_statistic_permutation, axis=1), axis=1)).astype(np.float) / iterations # argsort(argsor(x)) given the rankings of x in the same order. Example: a=[60,35,70,10,20] , then argsort(argsort(a)) gives array([3, 2, 4, 0, 1])
     unit_significant_permutation = p_value_permutation <= p_value_threshold
 
-    if homogeneous_statistic == '1-p_value':
+    # Here we try to massage the unit statistic so that it becomes homogeneous across different units
+    if homogeneous_statistic == '1-p_value': # Here we use (1-p_value) instead of the MMD2u statistic : this is perfectly homogeneous
         unit_statistic_permutation_homogeneous = 1.0 - p_value_permutation
         unit_statistic_homogeneous = 1.0 - p_value
-    elif homogeneous_statistic == 'normalized MMD2u':
+    elif homogeneous_statistic == 'normalized MMD2u': # Here we use a z-score of MMD2u, which is good if its distribution normal or approximately normal
         mmd2us_mean = unit_statistic_permutation.mean(1)
         mmd2us_std = unit_statistic_permutation.std(1)
-        # delta = mmd2us_threshold - mmd2us_mean
-        delta = mmd2us_std
-        unit_statistic_permutation_homogeneous = (unit_statistic_permutation - mmd2us_mean[:,None]) / delta[:,None]
-        unit_statistic_homogeneous = (unit_statistic - mmd2us_mean) / delta
-    elif homogeneous_statistic == 'unit_statistic_permutation':
+        unit_statistic_permutation_homogeneous = np.nan_to_num((unit_statistic_permutation - mmd2us_mean[:,None]) / mmd2us_std[:,None])
+        unit_statistic_homogeneous = np.nan_to_num((unit_statistic - mmd2us_mean) / mmd2us_mean)
+    elif homogeneous_statistic == 'unit_statistic': # Here we use the unit statistic assuming that it is homogeneous across units (this is not much true)
         unit_statistic_permutation_homogeneous = unit_statistic_permutation
         unit_statistic_homogeneous = unit_statistic
     else:
