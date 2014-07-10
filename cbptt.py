@@ -32,7 +32,7 @@ def compute_ttest_clusters(XX, y, p_value_threshold, proximity_matrix_space_time
     if verbose: print("4) cluster below threshold values in time and space.")
     clusters, cluster_statistic = compute_clusters_statistic(t_flat[idx], proximity_matrix_space_time[idx[:, None], idx])
     # give original indices to elements in clusters:
-    clusters = [[idx[ci] for ci in cl] for cl in clusters]
+    clusters = np.array([[idx[ci] for ci in cl] for cl in clusters])
     return clusters, cluster_statistic
 
 
