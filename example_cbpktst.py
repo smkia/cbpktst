@@ -16,7 +16,7 @@ if __name__ == '__main__':
     print("Cluster-Based Permutation Kernel Two-Sample Test (CBPKTST).")
     p_value_threshold = 0.05
     iterations = 1000
-    homogeneous_statistic = 'normalized MMD2u' # 'unit_statistic_permutation' # '1-p_value' # 
+    homogeneous_statistic = 'normalized MMD2u' # 'unit_statistic' # '1-p_value' # 
 
     print("Creating simulated data.")
     d = 20
