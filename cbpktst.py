@@ -159,6 +159,8 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
             pm_permutation = proximity_matrix[idx][:,idx]
             print("%d" % i),
             cluster_permutation, cluster_statistic_permutation = compute_clusters_statistic(unit_statistic_permutation_homogeneous[idx,i], pm_permutation, verbose=verbose)
+            # Mapping back clusters to original ids:
+            cluster_permutation = np.array([idx[cp] for cp in cluster_permutation])
             max_cluster_statistic[i] = cluster_statistic_permutation.max()
 
     print("Computing the null-distribution of the max cluster statistic.")
@@ -182,6 +184,8 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
             if pvc <= p_value_threshold:
                 cluster_significant.append(np.where(unit_significant)[0][cluster[i]])
         print("%d significant clusters left" % len(cluster_significant))
+        # Mapping back clusters to original ids:
+        cluster = np.array([idx[c] for c in cluster])
     else:
         print("No clusters in unpermuted data!")
 
