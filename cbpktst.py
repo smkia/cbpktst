@@ -9,6 +9,7 @@ from kernel_two_sample_test import MMD2u, compute_null_distribution
 from joblib import Parallel, delayed
 from scipy.sparse import issparse
 from networkx import from_scipy_sparse_matrix, from_numpy_matrix, connected_components
+from sys import stdout
 
 
 def precompute_gaussian_kernels(XX, YY, verbose=False):
@@ -156,6 +157,7 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
             # http://stackoverflow.com/questions/6408385/index-a-scipy-sparse-matrix-with-an-array-of-booleans
             pm_permutation = proximity_matrix[idx][:,idx]
             print("%d" % i),
+            stdout.flush()
             cluster_permutation, cluster_statistic_permutation = compute_clusters_statistic(unit_statistic_permutation_homogeneous[idx,i], pm_permutation, verbose=verbose)
             # Mapping back clusters to original ids:
             cluster_permutation = np.array([idx[cp] for cp in cluster_permutation])
