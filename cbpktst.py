@@ -23,11 +23,10 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
     m = XX.shape[0]
     n = YY.shape[0]
     for i in range(n_units):
-        print("Unit %s" % i)
+        print("Unit %s" % i),
         X = XX[:,i,:].copy()
         Y = YY[:,i,:].copy()
-        if verbose: print("%s  %s" % (X.shape, Y.shape))
-        if verbose: print("Computing Gaussian kernel.")
+        if verbose: print("Computing Gaussian kernel."),
         dm = pairwise_distances(np.vstack([X, Y]), metric='sqeuclidean')
         # Heuristic: sigma2 is the median value among all pairwise
         # distances between X and Y. Note: should we use just
@@ -176,15 +175,13 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
     if len(idx) > 0:
         pm = proximity_matrix[idx][:,idx]
         cluster, cluster_statistic = compute_clusters_statistic(unit_statistic_homogeneous[idx], pm, verbose=True)
+        # Mapping back clusters to original ids:
+        cluster = np.array([idx[c] for c in cluster])
         print("Cluster statistic: %s" % cluster_statistic)
         p_value_cluster = (max_cluster_statistic[:,None] > cluster_statistic).sum(0).astype(np.float) / iterations
         print "p_value_cluster:", p_value_cluster
-        for i, pvc in enumerate(p_value_cluster):
-            if pvc <= p_value_threshold:
-                cluster_significant.append(np.where(unit_significant)[0][cluster[i]])
+        cluster_significant = cluster[p_value_cluster <= p_value_threshold]
         print("%d significant clusters left" % len(cluster_significant))
-        # Mapping back clusters to original ids:
-        cluster = np.array([idx[c] for c in cluster])
     else:
         print("No clusters in unpermuted data!")
 
@@ -195,4 +192,4 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
         unit_statistic_significant[cs] = unit_statistic[cs]
         unit_statistic_homogeneous_significant[cs] = unit_statistic_homogeneous[cs]
 
-    return cluster_significant, unit_statistic_significant, unit_statistic_homogeneous_significant, cluster, unit_statistic, unit_statistic_homogeneous
+    return cluster, cluster_statistic, p_value_cluster, p_value_threshold, max_cluster_statistic
