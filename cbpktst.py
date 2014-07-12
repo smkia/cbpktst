@@ -5,7 +5,7 @@ See Olivett et al. (2014).
 
 import numpy as np
 from sklearn.metrics import pairwise_distances
-from kernel_two_sample_test import MMD2u, compute_null_distribution
+from kernel_two_sample_test.kernel_two_sample_test import MMD2u, compute_null_distribution, compute_null_distribution_given_permutations
 from joblib import Parallel, delayed
 from scipy.sparse import issparse
 from networkx import from_scipy_sparse_matrix, from_numpy_matrix, connected_components
@@ -41,12 +41,16 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
     return Ks, sigma2s
 
 
-def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, parallel=True, n_jobs=-1, verbose=False):
+def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, parallel=True, permutation=None, n_jobs=-1, verbose=False):
     """Compute MMD2u statistic and its null-distribution for each unit
     from kernel matrices Ks. Each null-distributions is approximated
     with the given number of iterations. Parallel (multiprocess, with
     n_jobs processes) computation is available. Note: n_jobs=-1 means
-    'use all available cores.'
+    'use all available cores'. Precomputed permutations (array of size
+    iterations x (m+n)) can be used instead of randomly generated
+    ones to enforce reproducibility and keep the desired permutation
+    schema for each kernel/unit. This is important during parallel
+    computation.
     """
     n_units = len(Ks)
     unit_statistic = np.zeros(n_units)
@@ -60,11 +64,19 @@ def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, para
     print("Computing MMD2u's null-distribution, for each unit.")
     if not parallel:
         for i, K in enumerate(Ks):
-            mmd2u_null = compute_null_distribution(K, m, n, iterations=iterations, verbose=verbose, seed=seed, marker_interval=100) # NOTE: IT IS FUNDAMENTAL THAT THE SAME IS USED SEED FOR EACH UNIT!
+            if permutation is None:
+                mmd2u_null = compute_null_distribution(K, m, n, iterations=iterations, verbose=verbose, seed=seed, marker_interval=100) # NOTE: IT IS FUNDAMENTAL THAT THE SAME IS USED SEED FOR EACH UNIT!
+            else:
+                mmd2u_null = compute_null_distribution_given_permutations(K, m, n, permutation, iterations=iterations)
+            
             unit_statistic_permutation[i, :] = mmd2u_null
     else:
         print("Parallel computation!")
-        results = Parallel(n_jobs=n_jobs, verbose=10)(delayed(compute_null_distribution)(K, m, n, iterations=iterations, verbose=False, seed=seed) for K in Ks) # NOTE: IT IS FUNDAMENTAL THAT THE SAME SEED IS USED FOR EACH UNIT!
+        if permutation is None:
+            results = Parallel(n_jobs=n_jobs, verbose=10)(delayed(compute_null_distribution)(K, m, n, iterations=iterations, verbose=False, seed=seed) for K in Ks) # NOTE: IT IS FUNDAMENTAL THAT THE SAME SEED IS USED FOR EACH UNIT!
+        else:
+            results = Parallel(n_jobs=n_jobs, verbose=10)(delayed(compute_null_distribution_given_permutations)(K, m, n, permutation, iterations=iterations) for K in Ks)
+            
         unit_statistic_permutation = np.vstack(results)
 
     return unit_statistic, unit_statistic_permutation
