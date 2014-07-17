@@ -17,14 +17,14 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
     the two samples XX and YY. Estimate each sigma2 parameter as median
     distance between the trials of each sample.
     """
-    print("Pre-computing the kernel matrix for each unit.")
+    if verbose: print("Pre-computing the kernel matrix for each unit.")
     n_units = XX.shape[1] # or YY.shape[1]
     Ks = [] # here we store all the kernel matrices
     sigma2s = np.zeros(n_units) # here we store all the sigma2s, one per unit
     m = XX.shape[0]
     n = YY.shape[0]
     for i in range(n_units):
-        print("Unit %s" % i),
+        if verbose: print("Unit %s" % i),
         X = XX[:,i,:].copy()
         Y = YY[:,i,:].copy()
         if verbose: print("Computing Gaussian kernel."),
