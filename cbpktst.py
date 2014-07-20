@@ -156,26 +156,17 @@ def compute_statistic_threshold(statistic_permutation, p_value_threshold):
     return statistic_threshold
 
 
-def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, proximity_matrix, p_value_threshold=0.05, homogeneous_statistic='normalized MMD2u', verbose=True):
-    """This is the cluster-based permutation test of CBPKTST, where
-    the MMD2u permutations at each unit are re-used in order to
-    compute the max_cluster_statistic.
+def compute_homogeneous_statistics(unit_statistic, unit_statistic_permutation, p_value_threshold, homogeneous_statistic='normalized MMD2u', verbose=True):
+    """Compute p_values from permutations and create homogeneous statistics.
     """
-    # homogeneous_statistic = 'normalized MMD2u' # '1-p_value' # 'unit_statistic_permutation'
-    iterations = unit_statistic_permutation.shape[1]
-    # Compute p-values for each unit
-    
+    # Compute p-values for each unit    
     print("Homogeneous statistic: %s" % homogeneous_statistic)
-
     print("Computing MMD2u thresholds for each unit with p-value=%f" % p_value_threshold)
     mmd2us_threshold = compute_statistic_threshold(unit_statistic_permutation, p_value_threshold)
-
     print("Computing actual p-values at each unit on the original (unpermuted) data")
     p_value = compute_pvalues_from_permutations(unit_statistic, unit_statistic_permutation)
-    unit_significant = p_value <= p_value_threshold
     print("Computing the p-value of each permutation of each unit.")
     p_value_permutation = compute_pvalues_of_permutations(unit_statistic_permutation)
-    unit_significant_permutation = p_value_permutation <= p_value_threshold
 
     # Here we try to massage the unit statistic so that it becomes homogeneous across different units, to compute the cluster statistic later on
     if homogeneous_statistic == '1-p_value': # Here we use (1-p_value) instead of the MMD2u statistic : this is perfectly homogeneous across units because the p_value is uniformly distributed, by definition
@@ -192,7 +183,21 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
     else:
         raise Exception
 
+    return p_value, p_value_permutation, unit_statistic_homogeneous, unit_statistic_permutation_homogeneous
+
+
+def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, proximity_matrix, p_value_threshold=0.05, homogeneous_statistic='normalized MMD2u', verbose=True):
+    """This is the cluster-based permutation test of CBPKTST, where
+    the MMD2u permutations at each unit are re-used in order to
+    compute the max_cluster_statistic.
+    """
+    p_value, p_value_permutation, unit_statistic_homogeneous, unit_statistic_permutation_homogeneous = compute_homogeneous_statistics(unit_statistic, unit_statistic_permutation, p_value_threshold, homogeneous_statistic=homogeneous_statistic, verbose=verbose)
+    
     # Compute clusters and max_cluster_statistic on permuted data
+
+    unit_significant = p_value <= p_value_threshold
+    unit_significant_permutation = p_value_permutation <= p_value_threshold
+    iterations = unit_statistic_permutation.shape[1]
 
     print("For each permutation compute the max cluster statistic.")
     max_cluster_statistic = np.zeros(iterations)
