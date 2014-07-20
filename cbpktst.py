@@ -153,7 +153,7 @@ def compute_statistic_threshold(statistic_permutation, p_value_threshold):
     statistic_permutation = np.atleast_2d(statistic_permutation)
     iterations = statistic_permutation.shape[1]
     statistic_threshold = np.sort(statistic_permutation, axis=1)[:, np.int((1.0-p_value_threshold)*iterations)]
-    return statistic_threshold
+    return statistic_threshold.squeeze()
 
 
 def compute_homogeneous_statistics(unit_statistic, unit_statistic_permutation, p_value_threshold, homogeneous_statistic='normalized MMD2u', verbose=True):
@@ -180,6 +180,9 @@ def compute_homogeneous_statistics(unit_statistic, unit_statistic_permutation, p
     elif homogeneous_statistic == 'unit_statistic': # Here we use the unit statistic assuming that it is homogeneous across units (this is not much true)
         unit_statistic_permutation_homogeneous = unit_statistic_permutation
         unit_statistic_homogeneous = unit_statistic
+    elif homogeneous_statistic == 'p_value': # Here we use p_value instead of the MMD2u statistic : this is perfectly homogeneous across units because the p_value is uniformly distributed, by definition
+        unit_statistic_permutation_homogeneous = p_value_permutation
+        unit_statistic_homogeneous = p_value
     else:
         raise Exception
 
