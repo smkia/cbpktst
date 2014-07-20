@@ -119,6 +119,43 @@ def compute_clusters_statistic(test_statistic, proximity_matrix, verbose=False):
     return clusters, cluster_statistic
 
 
+def compute_pvalues_from_permutations(statistic, statistic_permutation):
+    """Efficiently compute p-value(s) of statistic given permuted
+    statistics.
+
+    Note: statistic can be a vector and statistic_permutation can be a
+    matrix units x permutations.
+    """
+    statistic_permutation = np.atleast_2d(statistic_permutation)
+    iterations = statistic_permutation.shape[1]
+    p_value = (statistic_permutation.T >= statistic).sum(0).astype(np.float) / iterations
+    return p_value
+
+
+def compute_pvalues_of_permutations(statistic_permutation):
+    """Given permutations of a statistic, compute the p-value of each
+    permutation.
+
+    Note: tatistic_permutation can be a matrix units x permutations.
+    """
+    statistic_permutation = np.atleast_2d(statistic_permutation)
+    iterations = statistic_permutation.shape[1]
+    p_value_permutation = (iterations - np.argsort(np.argsort(statistic_permutation, axis=1), axis=1)).astype(np.float) / iterations # argsort(argsor(x)) given the rankings of x in the same order. Example: a=[60,35,70,10,20] , then argsort(argsort(a)) gives array([3, 2, 4, 0, 1])
+    return p_value_permutation
+
+
+def compute_statistic_threshold(statistic_permutation, p_value_threshold):
+    """Compute the threshold of a statistic value given permutations
+    and p_value_threshold.
+    
+    Note: tatistic_permutation can be a matrix units x permutations.
+    """
+    statistic_permutation = np.atleast_2d(statistic_permutation)
+    iterations = statistic_permutation.shape[1]
+    statistic_threshold = np.sort(statistic_permutation, axis=1)[:, np.int((1.0-p_value_threshold)*iterations)]
+    return statistic_threshold
+
+
 def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, proximity_matrix, p_value_threshold=0.05, homogeneous_statistic='normalized MMD2u', verbose=True):
     """This is the cluster-based permutation test of CBPKTST, where
     the MMD2u permutations at each unit are re-used in order to
@@ -131,13 +168,13 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
     print("Homogeneous statistic: %s" % homogeneous_statistic)
 
     print("Computing MMD2u thresholds for each unit with p-value=%f" % p_value_threshold)
-    mmd2us_threshold = np.sort(unit_statistic_permutation, axis=1)[:, np.int((1.0-p_value_threshold)*iterations)]
+    mmd2us_threshold = compute_statistic_threshold(unit_statistic_permutation, p_value_threshold)
 
     print("Computing actual p-values at each unit on the original (unpermuted) data")
-    p_value = (unit_statistic_permutation.T >= unit_statistic).sum(0).astype(np.float) / iterations
+    p_value = compute_pvalues_from_permutations(unit_statistic, unit_statistic_permutation)
     unit_significant = p_value <= p_value_threshold
     print("Computing the p-value of each permutation of each unit.")
-    p_value_permutation = (iterations - np.argsort(np.argsort(unit_statistic_permutation, axis=1), axis=1)).astype(np.float) / iterations # argsort(argsor(x)) given the rankings of x in the same order. Example: a=[60,35,70,10,20] , then argsort(argsort(a)) gives array([3, 2, 4, 0, 1])
+    p_value_permutation = compute_pvalues_of_permutations(unit_statistic_permutation)
     unit_significant_permutation = p_value_permutation <= p_value_threshold
 
     # Here we try to massage the unit statistic so that it becomes homogeneous across different units, to compute the cluster statistic later on
@@ -176,7 +213,7 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
             max_cluster_statistic[i] = cluster_statistic_permutation.max()
 
     print("Computing the null-distribution of the max cluster statistic.")
-    max_cluster_statistic_threshold = np.sort(max_cluster_statistic)[int((1.0-p_value_threshold) * iterations)]
+    max_cluster_statistic_threshold = compute_statistic_threshold(max_cluster_statistic, p_value_threshold)
     print("Max cluster statistic threshold (p-value=%s) = %s" % (p_value_threshold, max_cluster_statistic_threshold))
 
     # Compute clusters and max_cluster_statistic on the original
@@ -192,7 +229,7 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
         # Mapping back clusters to original ids:
         cluster = np.array([idx[c] for c in cluster])
         print("Cluster statistic: %s" % cluster_statistic)
-        p_value_cluster = (max_cluster_statistic[:,None] > cluster_statistic).sum(0).astype(np.float) / iterations
+        p_value_cluster = compute_pvalues_from_permutations(cluster_statistic, max_cluster_statistic)
         print "p_value_cluster:", p_value_cluster
         cluster_significant = cluster[p_value_cluster <= p_value_threshold]
         print("%d significant clusters left" % len(cluster_significant))
