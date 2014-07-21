@@ -14,7 +14,7 @@ def compute_boolean_proximity_matrix(coordinates, threshold):
     coordinates of a unit/sensor.
     """
     dm = pairwise_distances(coordinates)
-    proximity_matrix = dm < threshold
+    proximity_matrix = dm <= threshold
     return proximity_matrix.astype(np.int)
 
 
