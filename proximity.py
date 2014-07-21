@@ -44,7 +44,7 @@ def compute_sparse_boolean_proximity_matrix(coordinates, threshold):
     return proximity_matrix.tocsc()
 
 
-def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps, threshold_space=0.1, threshold_timesteps=1, space_sparse=False, verbose=False):
+def compute_sparse_boolean_proximity_matrix_space_time(coordinates, n_timesteps, threshold_space=1.0, threshold_timesteps=1, space_sparse=False, verbose=False):
     """Create the proximity matrix of a set of units with given
     coordinates in space and time, where two units are proximal if
     their Euclidean distance is less then the given threshold_space
