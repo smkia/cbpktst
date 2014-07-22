@@ -152,7 +152,7 @@ def compute_statistic_threshold(statistic_permutation, p_value_threshold):
     """
     statistic_permutation = np.atleast_2d(statistic_permutation)
     iterations = statistic_permutation.shape[1]
-    statistic_threshold = np.sort(statistic_permutation, axis=1)[:, np.int((1.0-p_value_threshold)*iterations)]
+    statistic_threshold = np.sort(statistic_permutation, axis=1)[:, np.int((1.0-p_value_threshold)*iterations) - 1]
     return statistic_threshold.squeeze()
 
 
