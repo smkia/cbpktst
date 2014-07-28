@@ -56,7 +56,7 @@ if __name__ == '__main__':
     print("")
     print("Cluster-based permutation test.")
 
-    cluster, cluster_statistic, p_value_cluster, p_value_threshold, max_cluster_statistic = cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, proximity_matrix, p_value_threshold=p_value_threshold, homogeneous_statistic=homogeneous_statistic, verbose=verbose)
+    cluster, cluster_statistic, p_value_cluster, p_value_threshold, max_cluster_statistic, unit_statistic_homogeneous = cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, proximity_matrix, p_value_threshold=p_value_threshold, homogeneous_statistic=homogeneous_statistic, verbose=verbose)
 
     # print("")
     # print("Visualising maps.")

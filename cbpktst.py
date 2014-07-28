@@ -81,7 +81,7 @@ def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, para
 
     return unit_statistic, unit_statistic_permutation
 
-    
+
 def compute_clusters_statistic(test_statistic, proximity_matrix, verbose=False):
     """Given a test statistic for each unit and a boolean proximity
     matrix among units, compute the cluster statistic using the
@@ -251,4 +251,4 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
         unit_statistic_significant[cs] = unit_statistic[cs]
         unit_statistic_homogeneous_significant[cs] = unit_statistic_homogeneous[cs]
 
-    return cluster, cluster_statistic, p_value_cluster, p_value_threshold, max_cluster_statistic
+    return cluster, cluster_statistic, p_value_cluster, p_value_threshold, max_cluster_statistic, unit_statistic_homogeneous
