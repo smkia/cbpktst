@@ -243,6 +243,9 @@ def cluster_based_permutation_test(unit_statistic, unit_statistic_permutation, p
         print("%d significant clusters left" % len(cluster_significant))
     else:
         print("No clusters in unpermuted data!")
+        cluster = np.array([])
+        cluster_statistic = np.array([])
+        p_value_cluster = np.array([])
 
     print("Zeroing all unit statistic (homogeneous too) related non-significant clusters.")
     unit_statistic_significant = np.zeros(unit_statistic.size)
