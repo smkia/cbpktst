@@ -32,7 +32,7 @@ def precompute_gaussian_kernels(XX, YY, verbose=False):
         # Heuristic: sigma2 is the median value among all pairwise
         # distances between X and Y. Note: should we use just
         # dm[:m,m:] or all dm?
-        sigma2 = np.median(dm[:m,m:]) 
+        sigma2 = np.median(dm[:m,m:])**2 
         sigma2s[i] = sigma2
         if verbose: print("sigma2 = %s" % sigma2)
         K = np.exp(-dm / sigma2)
