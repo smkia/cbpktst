@@ -59,7 +59,7 @@ def compute_mmd2u_and_null_distributions(Ks, m, n, iterations=1000, seed=0, para
     print("Computing MMD2u for each unit.")
     for i, K in enumerate(Ks):
         mmd2u = MMD2u(K, m, n)
-        unit_statistic[i] = mmd2u
+        unit_statistic[i] = (n+m)*mmd2u # For using asymptotic distribution of MMD the statistic is (n+m)*mmd2u
 
     print("Computing MMD2u's null-distribution, for each unit.")
     if not parallel:
